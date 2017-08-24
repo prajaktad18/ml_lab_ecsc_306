@@ -1,3 +1,81 @@
 USN : 01FE15BCS133
 GIT Username : prajaktad18
 BATCH : C1
+
+LAB 1 : ASSIGNMNET 2 :
+#----------------------------------------------- PART 1 ------------------------------------------------------
+import tensorflow as tf
+
+sess = tf.Session()
+#1.Read arrays x and y containing floating numbers
+array_x = tf.constant([1.0,2.0,3.0], name = 'x')
+array_y = tf.constant([2.0,3.0,4.0], name = 'y')
+
+#2. Calculate mean of x and y
+mean_x = tf.reduce_mean(array_x)
+mean_y = tf.reduce_mean(array_y)
+
+#3. Calucate variance of x
+#variance(x)=sum((x-mean(x))^2)
+with tf.name_scope("Variance_X"):
+    sq_x = tf.square(array_x - mean_x)
+
+    add_x = tf.reduce_sum(sq_x)
+
+    #get size of the array
+    n = (array_x.get_shape())
+    n = tf.to_float(n)
+    #print(n)
+
+    variance_x = tf.div(add_x,n,name="Variance_x")
+    
+    #writer = tf.summary.FileWriter("/tmp/tboard/l1a2_pa", sess.graph)
+    print(sess.run(variance_x))
+    #writer.close()
+    
+#4. Calculate covariance of x and y
+#covariance = sum((x(i) - mean(x)) * (y(i) - mean(y)))
+
+with tf.name_scope("Covariance"):
+    co_x_y=0.0
+    
+    for i in range(len(sess.run(array_x))):
+        co_x_y = tf.add(co_x_y,tf.multiply(tf.subtract(array_x[i],mean_x),tf.subtract(array_y[i],mean_y)))
+        
+#5. m=covariance(x,y)/variance(x) 
+with tf.name_scope("m"):
+    m = tf.div(co_x_y,variance_x,name="m")
+
+#6. c=mean(y)-m*mean(x)
+with tf.name_scope("c"):
+    c = tf.subtract(mean_y,tf.multiply(m,mean_x))
+    
+# y = mx + c
+with tf.name_scope("Linear_model"):
+    y = tf.add(tf.multiply(m,array_x),c)
+    
+#Printing the values
+print("Mean of x = ",sess.run(mean_x))
+print("Mean of y = ",sess.run(mean_y))
+print("Variance of x = ",sess.run(variance_x))
+print("Covariance(x,y) = ",sess.run(co_x_y))
+print("Slope,m = ",sess.run(m))
+print("Constant,c = ",sess.run(c))   
+print("y = mx + c = ",sess.run(y))
+
+#----------------------------------------------- PART 2 -----------------------------------------------------
+import matplotlib.pyplot  as plt
+
+#1. Plot graph for actual values against predicted value
+print("Array y : ",sess.run(array_y))
+print("Predicted y : ",sess.run(y))
+
+#plotting the graph
+plt.plot(sess.run(array_y),sess.run(y))
+#plt.axis(0,7,0,8)
+plt.show()
+
+#2. Calculate root mean square error.
+rmse = tf.sqrt(tf.reduce_sum(tf.pow(y-array_y, 2))/(len(sess.run(array_x))))
+print("Root mean square error:",sess.run(rmse))
+
